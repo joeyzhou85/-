@@ -1,0 +1,33 @@
+#!/usr/bin/expect -f
+
+set username [lindex $argv 0]
+set ip [lindex $argv 1]
+set password [lindex $argv 2]
+set root_pass [lindex $argv 3]
+set command [lindex $argv 4]
+set log [lindex $argv 5]
+
+log_file $log
+
+set timeout 15
+
+spawn ssh $username@$ip
+
+expect {
+"*yes/no" {send "yes\r";exp_continue}
+"*ssword:" {send "$password\r";exp_continue}
+"*ast login:*" {
+	send "LANG=C\r"
+	expect "$*"
+	send "su -\r"
+	expect "*ssword:*"
+	send "$root_pass\r"
+	expect "#*"
+	send "export LANG=C\r"
+	send "$command\r"
+	send "exit\r"
+        send "exit\r"
+	}
+}
+expect eof
+exit
